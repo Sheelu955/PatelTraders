@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PT Admin | Master Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #1d1d1f; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #1d1d1f; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
         /* 🍎 Premium Glass Cards */
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: saturate(180%) blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .glass-card:hover { box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
+        @media (min-width: 768px) { .glass-card:hover { box-shadow: 0 15px 35px rgba(0,0,0,0.06); } }
         
         /* 🏰 Responsive Sidebar */
-        .sidebar { width: 280px; height: 100vh; position: fixed; left: 0; top: 0; background: #fff; border-right: 1px solid #e5e7eb; padding: 30px 20px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100; }
+        .sidebar { width: 280px; height: 100vh; position: fixed; left: 0; top: 0; background: #fff; border-right: 1px solid #e5e7eb; padding: 30px 20px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100; overflow-y: auto; }
         .main-content { margin-left: 280px; padding: 40px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); min-height: 100vh; }
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; }
         
@@ -23,12 +23,12 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.1); }
             .sidebar-overlay.active { display: block; opacity: 1; }
-            .main-content { margin-left: 0; padding: 20px; }
+            .main-content { margin-left: 0; padding: 20px; padding-bottom: 80px; }
         }
 
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 14px; font-weight: 600; color: #6e6e73; transition: all 0.3s ease; margin-bottom: 8px; width: 100%; text-align: left; }
         .nav-link.active { background: #0071e3; color: white; box-shadow: 0 10px 20px rgba(0, 113, 227, 0.2); transform: scale(1.02); }
-        .nav-link:hover:not(.active) { background: #f5f5f7; color: #1d1d1f; transform: translateX(5px); }
+        @media (min-width: 1024px) { .nav-link:hover:not(.active) { background: #f5f5f7; color: #1d1d1f; transform: translateX(5px); } }
 
         /* 📦 Inputs & Forms */
         .admin-input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid #d2d2d7; outline: none; background: #fff; transition: 0.3s; font-size: 14px; font-weight: 500; }
@@ -38,19 +38,20 @@
         .upload-zone:hover { border-color: #0071e3; background: #f0f8ff; transform: scale(1.01); }
         
         /* 📱 Modals */
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(10px); z-index:200; align-items:center; justify-content:center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(10px); z-index:200; align-items:center; justify-content:center; padding: 16px; opacity: 0; transition: opacity 0.3s ease; }
         .modal.active { display:flex; opacity: 1; }
-        .modal-content { transform: scale(0.95); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
+        .modal-content { transform: scale(0.95); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 100%; max-width: 900px; max-height: 85vh; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom); }
         .modal.active .modal-content { transform: scale(1); opacity: 1; }
 
         /* 🔥 NON-BLOCKING GHOST LOADING */
         .loading-overlay { display:none; position:fixed; top: 20px; right: 20px; background:rgba(255,255,255,0.98); z-index:9999; align-items:center; gap: 12px; padding: 12px 24px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; transition: all 0.3s ease; }
+        @media (max-width: 600px) { .loading-overlay { top: auto; bottom: 20px; right: 50%; transform: translateX(50%); } }
         
         /* 🔥 SHANDAR CUSTOM TOAST */
-        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); z-index: 9999; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); z-index: 9999; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; width: 90%; max-width: 450px; }
         #toast-container.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
         
-        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; white-space: nowrap; }
         .status-pending { background: #fff3cd; color: #d65a00; border: 1px solid #ffe69c; }
         .status-processing { background: #e0f2fe; color: #0071e3; border: 1px solid #bae6fd; }
         .status-delivered { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
@@ -74,12 +75,12 @@
         }
 
         /* 🔒 SECURITY LOCK SCREEN CSS */
-        #adminLockScreen { position: fixed; inset: 0; background: #f5f5f7; z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
-        .lock-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; width: 90%; max-width: 400px; text-align: center; }
-        .lock-input { width: 100%; padding: 16px; border-radius: 12px; border: 2px solid #d2d2d7; outline: none; text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 2px; margin-bottom: 20px; transition: 0.3s; background: #fbfbfd; }
+        #adminLockScreen { position: fixed; inset: 0; background: #f5f5f7; z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; padding: 20px; }
+        .lock-card { background: white; padding: 40px; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; width: 100%; max-width: 400px; text-align: center; }
+        .lock-input { width: 100%; padding: 16px; border-radius: 16px; border: 2px solid #d2d2d7; outline: none; text-align: center; font-size: 24px; font-weight: 900; letter-spacing: 4px; margin-bottom: 20px; transition: 0.3s; background: #fbfbfd; }
         .lock-input:focus { border-color: #0071e3; background: #fff; box-shadow: 0 0 0 4px rgba(0,113,227,0.1); }
-        .lock-btn { width: 100%; padding: 16px; background: #0071e3; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 113, 227, 0.2); }
-        .lock-btn:hover { background: #005bb5; transform: translateY(-2px); }
+        .lock-btn { width: 100%; padding: 16px; background: #0071e3; color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0, 113, 227, 0.2); }
+        .lock-btn:active { transform: scale(0.95); }
         .lock-btn:disabled { background: #9ca3af; cursor: not-allowed; box-shadow: none; transform: none; }
         .error-msg { color: #ef4444; font-size: 13px; font-weight: 800; margin-bottom: 15px; min-height: 20px; }
     </style>
@@ -92,12 +93,12 @@
             <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100 shadow-sm">
                 <i class="fas fa-lock text-3xl text-[#0071e3]"></i>
             </div>
-            <h2 class="text-2xl font-black mb-2 text-gray-900 tracking-tight">एडमिन वॉल्ट</h2>
+            <h2 class="text-3xl font-black mb-2 text-gray-900 tracking-tight">Admin Vault</h2>
             <p class="text-gray-500 text-xs font-bold mb-6 uppercase tracking-widest">Secured Area</p>
             <div id="lockoutMsg" class="error-msg"></div>
             <!-- Admin PIN -->
-            <input type="password" id="adminPasscode" class="lock-input" placeholder="PIN दर्ज करें" onkeypress="if(event.key === 'Enter') checkPasscode()">
-            <button onclick="checkPasscode()" id="unlockBtn" class="lock-btn"><i class="fas fa-key mr-2"></i> अनलॉक करें</button>
+            <input type="password" inputmode="numeric" id="adminPasscode" class="lock-input" placeholder="Enter PIN" onkeypress="if(event.key === 'Enter') checkPasscode()">
+            <button onclick="checkPasscode()" id="unlockBtn" class="lock-btn"><i class="fas fa-key mr-2"></i> Unlock Vault</button>
         </div>
     </div>
 
@@ -106,13 +107,13 @@
 
     <!-- 🔥 Custom Shandar Toast -->
     <div id="toast-container">
-        <div class="bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl p-4 flex items-center gap-4 min-w-[320px] max-w-[450px]">
+        <div class="bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl p-4 flex items-center gap-4 w-full">
             <div id="toast-icon" class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg"></div>
-            <div>
+            <div class="flex-1">
                 <h4 id="toast-title" class="font-black text-gray-900 text-[15px] tracking-tight">Notification</h4>
                 <p id="toast-msg" class="text-[13px] text-gray-500 font-medium leading-snug"></p>
             </div>
-            <button onclick="hideToast()" class="ml-auto text-gray-400 hover:text-gray-900"><i class="fas fa-times"></i></button>
+            <button onclick="hideToast()" class="text-gray-400 hover:text-gray-900 active:scale-90 transition"><i class="fas fa-times text-lg"></i></button>
         </div>
     </div>
 
@@ -124,20 +125,20 @@
 
     <!-- 📱 Mobile Overlay & Header -->
     <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="lg:hidden bg-white/90 backdrop-blur-md border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-40">
+    <div class="lg:hidden bg-white/90 backdrop-blur-md border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-40 shadow-sm">
         <div class="flex items-center gap-3">
-            <img src="https://i.ibb.co/G4xsrr6j/qafx-Ln-R-md.png" class="w-9 h-9 rounded-lg shadow-sm">
+            <img src="https://i.ibb.co/G4xsrr6j/qafx-Ln-R-md.png" class="w-10 h-10 rounded-lg shadow-sm border border-gray-100">
             <span class="font-black tracking-tighter text-xl text-gray-900">PT ADMIN</span>
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="silentSync()" class="w-10 h-10 flex items-center justify-center bg-blue-50 text-[#0071e3] rounded-xl font-bold shadow-sm"><i class="fas fa-sync-alt"></i></button>
-            <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl text-gray-700 hover:bg-gray-200 transition"><i class="fas fa-bars"></i></button>
+        <div class="flex items-center gap-3">
+            <button onclick="silentSync()" class="w-10 h-10 flex items-center justify-center bg-blue-50 text-[#0071e3] rounded-xl font-bold shadow-sm active:scale-90 transition"><i class="fas fa-sync-alt"></i></button>
+            <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl text-gray-700 active:bg-gray-200 active:scale-90 transition"><i class="fas fa-bars"></i></button>
         </div>
     </div>
 
     <!-- 🏰 Sidebar Navigation -->
     <div class="sidebar shadow-[10px_0_30px_rgba(0,0,0,0.03)] flex flex-col" id="sidebar">
-        <div class="flex items-center gap-3 mb-10 px-2 mt-2 lg:mt-0">
+        <div class="flex items-center gap-3 mb-10 px-2 mt-4 lg:mt-0">
             <img src="https://i.ibb.co/G4xsrr6j/qafx-Ln-R-md.png" class="w-12 h-12 rounded-xl shadow-sm border border-gray-100">
             <div>
                 <h1 class="text-xl font-black tracking-tighter text-gray-900 leading-none">PATEL</h1>
@@ -146,16 +147,16 @@
         </div>
 
         <nav class="space-y-2 flex-1">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link active"><i class="fas fa-chart-pie w-5 text-center"></i> डैशबोर्ड</button>
-            <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-link"><i class="fas fa-couch w-5 text-center"></i> इन्वेंटरी</button>
-            <button onclick="switchTab('stock')" id="nav-stock" class="nav-link"><i class="fas fa-boxes w-5 text-center"></i> स्टॉक मैनेजमेंट</button>
-            <button onclick="switchTab('orders')" id="nav-orders" class="nav-link"><i class="fas fa-shopping-bag w-5 text-center"></i> ऑर्डर्स</button>
-            <button onclick="switchTab('users')" id="nav-users" class="nav-link"><i class="fas fa-users w-5 text-center"></i> ग्राहक <span id="userCountBadge" class="ml-auto bg-blue-100 text-blue-700 py-0.5 px-2 rounded-md text-[10px] font-black">0</span></button>
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link active"><i class="fas fa-chart-pie w-5 text-center"></i> Dashboard</button>
+            <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-link"><i class="fas fa-couch w-5 text-center"></i> Inventory</button>
+            <button onclick="switchTab('stock')" id="nav-stock" class="nav-link"><i class="fas fa-boxes w-5 text-center"></i> Stock Control</button>
+            <button onclick="switchTab('orders')" id="nav-orders" class="nav-link"><i class="fas fa-shopping-bag w-5 text-center"></i> Orders</button>
+            <button onclick="switchTab('users')" id="nav-users" class="nav-link"><i class="fas fa-users w-5 text-center"></i> Customers <span id="userCountBadge" class="ml-auto bg-blue-100 text-blue-700 py-0.5 px-2 rounded-md text-[10px] font-black">0</span></button>
         </nav>
         
-        <div class="pt-6 border-t border-gray-100 mt-auto flex gap-2">
-            <button onclick="silentSync()" class="nav-link text-[#0071e3] bg-blue-50 flex-1 justify-center"><i class="fas fa-sync-alt"></i> Sync</button>
-            <button onclick="location.reload()" class="nav-link text-red-500 bg-red-50 flex-1 justify-center" title="Hard Reload"><i class="fas fa-redo"></i></button>
+        <div class="pt-6 border-t border-gray-100 mt-auto flex gap-2 pb-safe">
+            <button onclick="silentSync()" class="nav-link text-[#0071e3] bg-blue-50 flex-1 justify-center active:scale-95"><i class="fas fa-sync-alt"></i> Sync</button>
+            <button onclick="location.reload()" class="nav-link text-red-500 bg-red-50 flex-1 justify-center active:scale-95" title="Hard Reload"><i class="fas fa-redo"></i></button>
         </div>
     </div>
 
@@ -165,38 +166,38 @@
         <!-- 📊 TAB: DASHBOARD -->
         <section id="view-dashboard" class="fade-in-up">
             <div class="flex justify-between items-end mb-8">
-                <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900">कंट्रोल रूम</h2>
-                <button onclick="silentSync()" class="hidden lg:flex items-center gap-2 bg-white border border-gray-200 shadow-sm text-gray-700 font-bold px-4 py-2 rounded-xl hover:bg-gray-50 transition"><i class="fas fa-sync-alt text-[#0071e3]"></i> Sync Vault</button>
+                <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900">Control Room</h2>
+                <button onclick="silentSync()" class="hidden lg:flex items-center gap-2 bg-white border border-gray-200 shadow-sm text-gray-700 font-bold px-5 py-2.5 rounded-xl hover:bg-gray-50 transition active:scale-95"><i class="fas fa-sync-alt text-[#0071e3]"></i> Sync Vault</button>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <div class="glass-card p-6 border-l-4 border-l-[#0071e3]">
-                    <div class="flex justify-between items-start"><p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">कुल प्रोडक्ट्स</p><i class="fas fa-box text-gray-300"></i></div>
+                    <div class="flex justify-between items-start"><p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Products</p><i class="fas fa-box text-gray-300 text-lg"></i></div>
                     <h3 id="stat-products" class="text-4xl md:text-5xl font-black text-gray-900 mt-2">0</h3>
                 </div>
                 <div class="glass-card p-6 border-l-4 border-l-orange-500">
-                    <div class="flex justify-between items-start"><p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">पेंडिंग ऑर्डर्स</p><i class="fas fa-clock text-gray-300"></i></div>
+                    <div class="flex justify-between items-start"><p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Pending Orders</p><i class="fas fa-clock text-gray-300 text-lg"></i></div>
                     <h3 id="stat-orders" class="text-4xl md:text-5xl font-black text-gray-900 mt-2">0</h3>
                 </div>
                 <div class="glass-card p-6 border-l-4 border-l-green-500">
-                    <div class="flex justify-between items-start"><p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">रजिस्टर्ड ग्राहक</p><i class="fas fa-users text-gray-300"></i></div>
+                    <div class="flex justify-between items-start"><p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Customers</p><i class="fas fa-users text-gray-300 text-lg"></i></div>
                     <h3 id="stat-users" class="text-4xl md:text-5xl font-black text-gray-900 mt-2">0</h3>
                 </div>
                 <div class="glass-card p-6 border-l-4 border-l-purple-500">
-                    <div class="flex justify-between items-start"><p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">कुल आमदनी (₹)</p><i class="fas fa-wallet text-gray-300"></i></div>
+                    <div class="flex justify-between items-start"><p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Revenue (₹)</p><i class="fas fa-wallet text-gray-300 text-lg"></i></div>
                     <h3 id="stat-revenue" class="text-4xl md:text-5xl font-black text-gray-900 mt-2">0</h3>
                 </div>
             </div>
 
-            <h3 class="text-2xl font-black mb-6 text-gray-900">हाल ही के ऑर्डर्स</h3>
+            <h3 class="text-2xl font-black mb-6 text-gray-900">Recent Orders</h3>
             <div class="glass-card table-wrapper">
-                <table class="w-full text-left min-w-[600px]">
+                <table class="w-full text-left min-w-[700px]">
                     <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">ऑर्डर ID / Date</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">कस्टमर / पता</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">टोटल</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">स्टेटस</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Order ID / Date</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Customer / Address</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Total</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Status</th>
                         </tr>
                     </thead>
                     <tbody id="recentOrdersTable"></tbody>
@@ -206,16 +207,16 @@
 
         <!-- 🛋️ TAB: INVENTORY -->
         <section id="view-inventory" class="hidden-view fade-in-up">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900">इन्वेंटरी</h2>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900">Inventory</h2>
                 
-                <div class="flex-1 max-w-md w-full relative mx-0 sm:mx-4">
+                <div class="flex-1 w-full md:max-w-md relative">
                     <i class="fas fa-search absolute left-4 top-4 text-gray-400"></i>
-                    <input type="text" id="searchInventory" onkeyup="searchInventoryGrid()" placeholder="सर्च प्रोडक्ट (नाम या ID)..." class="admin-input pl-11 shadow-sm">
+                    <input type="text" id="searchInventory" onkeyup="searchInventoryGrid()" placeholder="Search (Name or ID)..." class="admin-input pl-11 shadow-sm">
                 </div>
 
-                <button onclick="openAddModal()" class="bg-[#1d1d1f] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#0071e3] transition-all transform hover:-translate-y-1 shadow-lg shadow-black/10 flex items-center gap-2 w-full sm:w-auto justify-center">
-                    <i class="fas fa-plus"></i> नया प्रोडक्ट जोड़ें
+                <button onclick="openAddModal()" class="bg-[#1d1d1f] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#0071e3] transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 w-full md:w-auto">
+                    <i class="fas fa-plus"></i> Add New Product
                 </button>
             </div>
             <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
@@ -223,31 +224,31 @@
 
         <!-- 📦 TAB: STOCK MANAGEMENT -->
         <section id="view-stock" class="hidden-view fade-in-up">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900">स्टॉक मैनेजमेंट</h2>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <h2 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900">Stock Control</h2>
                 
-                <div class="flex-1 max-w-md w-full relative mx-0 sm:mx-4">
+                <div class="flex-1 w-full md:max-w-md relative">
                     <i class="fas fa-search absolute left-4 top-4 text-gray-400"></i>
-                    <input type="text" id="searchStock" onkeyup="searchStockTable()" placeholder="सर्च प्रोडक्ट..." class="admin-input pl-11 shadow-sm">
+                    <input type="text" id="searchStock" onkeyup="searchStockTable()" placeholder="Search product..." class="admin-input pl-11 shadow-sm">
                 </div>
 
-                <button onclick="silentSync()" class="bg-gray-100 text-gray-700 px-6 py-3.5 rounded-xl font-bold hover:bg-gray-200 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
-                    <i class="fas fa-sync-alt text-[#0071e3]"></i> रिफ्रेश स्टॉक
+                <button onclick="silentSync()" class="bg-white border border-gray-200 text-gray-700 px-6 py-3.5 rounded-xl font-bold hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-2 w-full md:w-auto shadow-sm">
+                    <i class="fas fa-sync-alt text-[#0071e3]"></i> Refresh
                 </button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                <div class="bg-green-50 border border-green-100 p-6 rounded-2xl flex items-center gap-4">
-                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-check-circle"></i></div>
-                    <div><p class="text-xs font-bold text-gray-500 uppercase tracking-widest">In Stock</p><h3 id="stock-active" class="text-3xl font-black text-gray-900">0</h3></div>
+                <div class="bg-green-50 border border-green-100 p-6 rounded-3xl flex items-center gap-4">
+                    <div class="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-check-circle"></i></div>
+                    <div><p class="text-[10px] font-bold text-green-600 uppercase tracking-widest">In Stock</p><h3 id="stock-active" class="text-3xl font-black text-gray-900">0</h3></div>
                 </div>
-                <div class="bg-red-50 border border-red-100 p-6 rounded-2xl flex items-center gap-4">
-                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-times-circle"></i></div>
-                    <div><p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Out of Stock</p><h3 id="stock-out" class="text-3xl font-black text-gray-900">0</h3></div>
+                <div class="bg-red-50 border border-red-100 p-6 rounded-3xl flex items-center gap-4">
+                    <div class="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-times-circle"></i></div>
+                    <div><p class="text-[10px] font-bold text-red-600 uppercase tracking-widest">Out of Stock</p><h3 id="stock-out" class="text-3xl font-black text-gray-900">0</h3></div>
                 </div>
-                <div class="bg-blue-50 border border-blue-100 p-6 rounded-2xl flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fas fa-truck-loading"></i></div>
-                    <div><p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Coming Soon</p><h3 id="stock-incoming" class="text-3xl font-black text-gray-900">0</h3></div>
+                <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl flex items-center gap-4">
+                    <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-truck-loading"></i></div>
+                    <div><p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Coming Soon</p><h3 id="stock-incoming" class="text-3xl font-black text-gray-900">0</h3></div>
                 </div>
             </div>
 
@@ -255,10 +256,10 @@
                 <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">प्रोडक्ट (Product)</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">स्टॉक (Quantity)</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">स्टेटस (Visibility)</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">एक्शन (Actions)</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Product Details</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center whitespace-nowrap">Quantity</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Visibility Status</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center whitespace-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="stockListTable"></tbody>
@@ -268,16 +269,16 @@
 
         <!-- 🛍️ TAB: ORDERS -->
         <section id="view-orders" class="hidden-view fade-in-up">
-            <h2 class="text-3xl md:text-4xl font-black mb-8 tracking-tight text-gray-900">सभी ऑर्डर्स</h2>
+            <h2 class="text-3xl md:text-4xl font-black mb-8 tracking-tight text-gray-900">All Orders</h2>
             <div class="glass-card table-wrapper">
                 <table class="w-full text-left border-collapse min-w-[900px]">
                     <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">ऑर्डर ID</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">कस्टमर / पूरा पता</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">आइटम्स</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">टोटल (₹)</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">एक्शन / स्लिप</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Order ID / Date</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Customer Info</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Items</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Total (₹)</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center whitespace-nowrap">Action / Print</th>
                         </tr>
                     </thead>
                     <tbody id="orderListTable"></tbody>
@@ -287,15 +288,15 @@
 
         <!-- 👥 TAB: USERS -->
         <section id="view-users" class="hidden-view fade-in-up">
-            <h2 class="text-3xl md:text-4xl font-black mb-8 tracking-tight text-gray-900">ग्राहक प्रबंधन</h2>
+            <h2 class="text-3xl md:text-4xl font-black mb-8 tracking-tight text-gray-900">Customer Management</h2>
             <div class="glass-card table-wrapper">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">यूजर ID</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400">प्रोफाइल</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">लॉगिन/Visits</th>
-                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">डिटेल्स (Live Cart)</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">User ID</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Profile</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center whitespace-nowrap">Logins / Visits</th>
+                            <th class="p-5 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center whitespace-nowrap">Vault (Live Cart)</th>
                         </tr>
                     </thead>
                     <tbody id="userListTable"></tbody>
@@ -306,55 +307,55 @@
 
     <!-- 🛠️ MODAL: ADD PRODUCT -->
     <div id="addModal" class="modal">
-        <div class="glass-card p-6 sm:p-10 max-w-4xl w-full mx-4 shadow-2xl relative max-h-[90vh] overflow-y-auto modal-content bg-white/95">
-            <button onclick="closeAddModal()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-red-500 bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-sm"><i class="fas fa-times text-lg"></i></button>
-            <h2 class="text-2xl sm:text-3xl font-black mb-8 tracking-tight text-gray-900">नया प्रोडक्ट जोड़ें</h2>
+        <div class="glass-card p-6 sm:p-10 max-w-4xl w-full mx-4 shadow-2xl relative modal-content bg-white/95 rounded-[32px]">
+            <button onclick="closeAddModal()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-red-500 bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-sm active:scale-90"><i class="fas fa-times text-lg"></i></button>
+            <h2 class="text-2xl sm:text-3xl font-black mb-8 tracking-tight text-gray-900">Add New Product</h2>
             
             <form id="productForm" class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">नाम</label><input type="text" name="Name" required class="admin-input" placeholder="जैसे: रॉयल किंग साइज तखत"></div>
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">Product Name</label><input type="text" name="Name" required class="admin-input" placeholder="e.g. Royal King Size Bed"></div>
                     
                     <div>
-                        <label class="text-[10px] font-black text-[#0071e3] uppercase ml-1 mb-1.5 block">कैटेगरी (चुनें या बनाएं)</label>
-                        <select id="catSelect" onchange="handleCategoryChange()" class="admin-input cursor-pointer font-bold" required>
-                            <option value="">-- पुरानी कैटेगरी चुनें --</option>
+                        <label class="text-[10px] font-black text-[#0071e3] uppercase ml-1 mb-1.5 block">Category (Select or Create)</label>
+                        <select id="catSelect" onchange="handleCategoryChange()" class="admin-input cursor-pointer font-bold bg-gray-50" required>
+                            <option value="">-- Select Existing Category --</option>
                         </select>
-                        <input type="text" id="newCatInput" class="admin-input mt-2 hidden-view border-[#0071e3]" placeholder="नई कैटेगरी का नाम लिखें (जैसे: Dining Table)">
+                        <input type="text" id="newCatInput" class="admin-input mt-2 hidden-view border-[#0071e3] bg-blue-50/30" placeholder="Enter new category name (e.g. Dining Table)">
                     </div>
 
-                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">सेलिंग प्राइस (₹)</label><input type="number" name="Price" required class="admin-input" placeholder="₹"></div>
-                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">MRP (₹)</label><input type="number" name="MRP" required class="admin-input" placeholder="₹"></div>
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">Selling Price (₹)</label><input type="number" inputmode="numeric" name="Price" required class="admin-input" placeholder="₹"></div>
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">MRP (₹)</label><input type="number" inputmode="numeric" name="MRP" required class="admin-input" placeholder="₹"></div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 p-5 bg-gray-50/80 rounded-2xl border border-gray-100 shadow-inner">
-                    <div><label class="text-[10px] font-black text-gray-500 uppercase mb-1.5 block">लकड़ी का प्रकार</label><input type="text" name="Wood_Type" class="admin-input bg-white" placeholder="सागवान"></div>
-                    <div><label class="text-[10px] font-black text-gray-500 uppercase mb-1.5 block">डायमेंशन</label><input type="text" name="Dimensions" class="admin-input bg-white" placeholder="6x4 ft"></div>
-                    <div><label class="text-[10px] font-black text-gray-500 uppercase mb-1.5 block">वजन</label><input type="text" name="Weight" class="admin-input bg-white" placeholder="50 KG"></div>
+                    <div><label class="text-[10px] font-black text-gray-500 uppercase mb-1.5 block">Wood Type</label><input type="text" name="Wood_Type" class="admin-input bg-white" placeholder="e.g. Teak Wood (Sagwan)"></div>
+                    <div><label class="text-[10px] font-black text-gray-500 uppercase mb-1.5 block">Dimensions</label><input type="text" name="Dimensions" class="admin-input bg-white" placeholder="e.g. 6x4 ft"></div>
+                    <div><label class="text-[10px] font-black text-gray-500 uppercase mb-1.5 block">Weight</label><input type="text" name="Weight" class="admin-input bg-white" placeholder="e.g. 50 KG"></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">साइज (कॉमा से अलग करें)</label><input type="text" name="Size_Options" class="admin-input" placeholder="King, Queen"></div>
-                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">शुरुआती स्टॉक</label><input type="number" name="Stock" required class="admin-input" value="10"></div>
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">Sizes (Comma separated)</label><input type="text" name="Size_Options" class="admin-input" placeholder="King, Queen"></div>
+                    <div><label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">Initial Stock Quantity</label><input type="number" inputmode="numeric" name="Stock" required class="admin-input" value="10"></div>
                 </div>
 
                 <div class="space-y-3">
-                    <label class="text-[10px] font-black text-[#0071e3] uppercase ml-1 block"><i class="fas fa-camera mr-1"></i> प्रोडक्ट तस्वीरें (डायरेक्ट अपलोड)</label>
+                    <label class="text-[10px] font-black text-[#0071e3] uppercase ml-1 block"><i class="fas fa-camera mr-1"></i> Product Images (Direct Upload)</label>
                     <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
                         <i class="fas fa-cloud-upload-alt text-4xl text-[#0071e3] mb-3 block"></i>
-                        <span class="font-bold text-gray-600 text-sm">क्लिक करके 4-5 फोटो सिलेक्ट करें</span>
+                        <span class="font-bold text-gray-600 text-sm">Click to select 4-5 photos</span>
                         <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="handleImagePreview()">
                     </div>
                     <div id="previewGrid" class="flex flex-wrap gap-3 mt-2"></div>
                 </div>
 
                 <div>
-                    <label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">क्रांतिकारी लंबा विवरण</label>
-                    <textarea name="Long_Description" required class="admin-input h-32 resize-none" placeholder="प्रोडक्ट की पूरी कहानी और खूबियां यहाँ लिखें..."></textarea>
+                    <label class="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1.5 block">Detailed Description</label>
+                    <textarea name="Long_Description" required class="admin-input h-32 resize-none" placeholder="Write the complete details and features of the product here..."></textarea>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                    <button type="button" onclick="closeAddModal()" class="w-full sm:w-1/3 py-4 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">कैंसिल</button>
-                    <button type="submit" id="saveBtn" class="w-full sm:w-2/3 py-4 rounded-xl font-bold bg-[#0071e3] text-white hover:bg-blue-600 transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"><i class="fas fa-save"></i> मास्टर वॉल्ट में सेव करें</button>
+                    <button type="button" onclick="closeAddModal()" class="w-full sm:w-1/3 py-4 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition active:scale-95">Cancel</button>
+                    <button type="submit" id="saveBtn" class="w-full sm:w-2/3 py-4 rounded-xl font-bold bg-[#0071e3] text-white hover:bg-blue-600 transition active:scale-95 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"><i class="fas fa-save"></i> Save to Master Vault</button>
                 </div>
             </form>
         </div>
@@ -362,25 +363,24 @@
 
     <!-- 👤 MODAL: VIEW USER DETAILS & LIVE CART -->
     <div id="userModal" class="modal">
-        <div class="glass-card p-6 sm:p-10 max-w-3xl w-full mx-4 shadow-2xl relative max-h-[90vh] overflow-y-auto modal-content bg-white/95">
-            <button onclick="closeUserModal()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-red-500 bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition shadow-sm"><i class="fas fa-times text-lg"></i></button>
+        <div class="glass-card p-6 sm:p-10 max-w-3xl w-full mx-4 shadow-2xl relative modal-content bg-white/95 rounded-[32px]">
+            <button onclick="closeUserModal()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-red-500 bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition shadow-sm active:scale-90"><i class="fas fa-times text-lg"></i></button>
             
             <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 pb-8 border-b border-gray-100 text-center sm:text-left">
-                <!-- Profile picture support added here -->
                 <img id="um-avatar" src="" class="w-24 h-24 rounded-full shadow-lg border-4 border-white object-cover">
                 <div>
                     <h2 id="um-name" class="text-3xl font-black text-gray-900 tracking-tight">Name</h2>
                     <p id="um-email" class="text-gray-500 font-medium text-sm mt-1">Email</p>
-                    <p class="mt-2"><span id="um-phone" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Phone</span></p>
+                    <p class="mt-2"><span id="um-phone" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-100">Phone</span></p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
+                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <p class="text-[10px] font-black text-[#0071e3] uppercase tracking-widest mb-3 flex items-center"><i class="fas fa-map-marker-alt mr-2"></i> Address Vault Data</p>
                     <p id="um-address" class="text-sm font-bold text-gray-800 leading-relaxed">No address saved.</p>
                 </div>
-                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
+                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 shadow-sm">
                     <p class="text-[10px] font-black text-[#0071e3] uppercase tracking-widest mb-3 flex items-center"><i class="fas fa-shield-alt mr-2"></i> Security & Activity</p>
                     <div class="space-y-2">
                         <div class="flex justify-between"><span class="text-xs font-bold text-gray-500">Logins:</span> <span id="um-visits" class="text-sm font-black text-gray-900">0</span></div>
@@ -397,7 +397,7 @@
             <div id="um-orders" class="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar"></div>
             
             <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest bg-gray-50 inline-block px-3 py-1 rounded-md">Vault ID: <span id="um-vaultid" class="text-gray-600">N/A</span></p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest bg-gray-50 inline-block px-4 py-2 rounded-lg border border-gray-100">Vault ID: <span id="um-vaultid" class="text-gray-600">N/A</span></p>
             </div>
         </div>
     </div>
@@ -445,7 +445,7 @@
             let timer = setInterval(() => {
                 let m = Math.floor(seconds / 60);
                 let s = seconds % 60;
-                document.getElementById('lockoutMsg').innerHTML = `<i class="fas fa-ban"></i> वॉल्ट लॉक है! ${m}m ${s}s तक रुकें`;
+                document.getElementById('lockoutMsg').innerHTML = `<i class="fas fa-ban"></i> Vault Locked! Wait ${m}m ${s}s`;
                 seconds--;
                 if(seconds < 0) {
                     clearInterval(timer);
@@ -464,7 +464,7 @@
                 lockScreen.style.opacity = '0';
                 setTimeout(() => lockScreen.style.display = 'none', 400);
                 if(typeof showToast === 'function') {
-                    showToast("वॉल्ट सफलतापूर्वक अनलॉक हो गया!", "success");
+                    showToast("Vault unlocked successfully!", "success");
                 }
             } else {
                 failedAttempts++;
@@ -474,7 +474,7 @@
                     localStorage.setItem('pt_lockout_time', lockUntil);
                     applyLockdown(5 * 60 * 1000);
                 } else {
-                    document.getElementById('lockoutMsg').innerText = `❌ गलत PIN! ${5 - failedAttempts} प्रयास बचे हैं।`;
+                    document.getElementById('lockoutMsg').innerText = `❌ Incorrect PIN! ${5 - failedAttempts} attempts left.`;
                     document.getElementById('adminPasscode').value = '';
                 }
             }
@@ -483,9 +483,9 @@
         document.addEventListener('DOMContentLoaded', initSecurity);
 
         // ==========================================
-        // 🔥 NEW BACKEND URL APPLIED
+        // 🔥 MASTER URL INTEGRATED SUCCESSFULLY
         // ==========================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzWrCeoO6IAWexfNm8_B7iXOU5yLTLwwgDyxTyoh-kTBQSSwHZp9UwDXpa2BxuqE_9wQ/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxS0p2UJDo1dNOH6JxVMywh1PnmTx3vmX-MHN4gEsa0aokUQpplu8KCjM9xXv7gu4oBcQ/exec"; 
         const TOKEN = "PT_SECURE_2026";
         
         let allData = { products: [], orders: [], users: [], carts: [] };
@@ -547,13 +547,13 @@
             return firstUrl; 
         }
 
-        // 🔥 NEW: ADDRESS FORMATTER FOR ADDRESS_VAULT COMPATIBILITY
+        // 🔥 ADDRESS FORMATTER
         function formatAddress(u) {
             if (!u) return 'No Address Provided';
             try {
                 let addrs = JSON.parse(u.Addresses_JSON || u.Address || "[]");
                 if (Array.isArray(addrs) && addrs.length > 0) {
-                    let a = addrs[0]; // Fetch the primary/latest address
+                    let a = addrs[0]; 
                     return `${a.l1 || ''}, ${a.l2 ? a.l2+', ' : ''}${a.city || ''}, ${a.state || ''} - ${a.pin || ''}`;
                 }
             } catch(e) {}
@@ -597,9 +597,9 @@
             const cats = [...new Set(allData.products.map(p => p.Category))].filter(Boolean);
             const select = document.getElementById('catSelect');
             
-            select.innerHTML = '<option value="">-- पुरानी कैटेगरी चुनें --</option>';
+            select.innerHTML = '<option value="">-- Select Existing Category --</option>';
             cats.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
-            select.innerHTML += `<option value="NEW" class="font-bold text-[#0071e3]">+ 🆕 नई कैटेगरी बनाएं</option>`;
+            select.innerHTML += `<option value="NEW" class="font-bold text-[#0071e3]">+ 🆕 Create New Category</option>`;
         }
 
         function handleCategoryChange() {
@@ -642,20 +642,20 @@
             } else {
                 document.getElementById('recentOrdersTable').innerHTML = recentOrders.map(o => {
                     let u = allData.users.find(x => x.Email === o.Email);
-                    let address = o.Delivery_Address || formatAddress(u); // Prioritize order's specific address
+                    let address = o.Delivery_Address || formatAddress(u); 
                     let name = u && u.Name ? u.Name : 'Guest';
                     return `
                     <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                        <td class="p-4">
+                        <td class="p-4 whitespace-nowrap">
                             <p class="font-mono text-[11px] font-black text-gray-900">${o.Order_ID}</p>
                             <p class="text-[10px] text-gray-400 font-bold mt-0.5">${new Date(o.Date).toLocaleDateString()}</p>
                         </td>
-                        <td class="p-4">
+                        <td class="p-4 min-w-[200px]">
                             <p class="text-xs font-bold text-gray-900">${name}</p>
-                            <p class="text-[10px] font-bold text-gray-500 mt-1 max-w-[200px] leading-tight truncate"><i class="fas fa-map-marker-alt text-red-500"></i> ${address}</p>
+                            <p class="text-[10px] font-bold text-gray-500 mt-1 leading-tight"><i class="fas fa-map-marker-alt text-red-500"></i> ${address}</p>
                         </td>
-                        <td class="p-4 font-black text-[#0071e3]">₹${o.Amount}</td>
-                        <td class="p-4"><span class="status-badge ${getStatusClass(o.Status)}">${o.Status}</span></td>
+                        <td class="p-4 font-black text-[#0071e3] whitespace-nowrap">₹${o.Amount}</td>
+                        <td class="p-4 whitespace-nowrap"><span class="status-badge ${getStatusClass(o.Status)}">${o.Status}</span></td>
                     </tr>
                 `;}).join('');
             }
@@ -677,7 +677,7 @@
                         <h4 class="font-bold text-gray-900 line-clamp-1 mb-3 text-lg">${p.Name}</h4>
                         <div class="flex justify-between items-end border-t border-gray-100 pt-3 mt-auto">
                             <div><span class="text-[10px] text-gray-400 font-bold block uppercase tracking-wide">Price</span><span class="font-black text-xl text-gray-900">₹${p.Price}</span></div>
-                            <div class="text-right"><span class="text-[10px] text-gray-400 font-bold block uppercase tracking-wide">Status</span><span class="font-bold text-xs ${p.Status === 'Hidden' ? 'text-red-500' : 'text-green-600'} bg-gray-50 px-2 py-1 rounded-md border">${p.Status || 'Visible'}</span></div>
+                            <div class="text-right"><span class="text-[10px] text-gray-400 font-bold block uppercase tracking-wide">Status</span><span class="font-bold text-xs ${p.Status === 'Hidden' ? 'text-red-500' : 'text-green-600'} bg-gray-50 px-2 py-1 rounded-md border">${p.Status === 'Hidden' ? 'Hidden' : 'Visible'}</span></div>
                         </div>
                     </div>
                 </div>
@@ -711,23 +711,23 @@
                             </div>
                         </td>
                         <td class="p-4 text-center">
-                            <input type="number" id="edit-stock-${p.ID}" value="${stockNum}" class="admin-input py-2 px-2 w-24 text-center font-black text-lg text-gray-900 mx-auto" ${isDeleted ? 'disabled' : ''}>
+                            <input type="number" inputmode="numeric" id="edit-stock-${p.ID}" value="${stockNum}" class="admin-input py-2 px-2 w-24 text-center font-black text-lg text-gray-900 mx-auto" ${isDeleted ? 'disabled' : ''}>
                         </td>
-                        <td class="p-4">
-                            <select id="edit-status-${p.ID}" class="admin-input py-2 px-3 text-[12px] cursor-pointer font-bold ${isDeleted ? 'hidden-view' : ''}">
-                                <option value="Visible" ${currentStatus==='Visible'?'selected':''}>🟢 Live (दिखेगा)</option>
-                                <option value="Incoming" ${currentStatus==='Incoming'?'selected':''}>🟠 Coming Soon (आने वाला है)</option>
-                                <option value="Hidden" ${currentStatus==='Hidden'?'selected':''}>🔴 Hidden (छुपाएं)</option>
+                        <td class="p-4 min-w-[150px]">
+                            <select id="edit-status-${p.ID}" class="admin-input py-2 px-2 text-[11px] cursor-pointer font-bold ${isDeleted ? 'hidden-view' : ''}">
+                                <option value="Visible" ${currentStatus==='Visible'?'selected':''}>🟢 Live (Visible)</option>
+                                <option value="Incoming" ${currentStatus==='Incoming'?'selected':''}>🟠 Coming Soon</option>
+                                <option value="Hidden" ${currentStatus==='Hidden'?'selected':''}>🔴 Hidden</option>
                             </select>
-                            ${isDeleted ? '<span class="text-red-500 font-black text-[11px] uppercase tracking-widest bg-red-50 px-3 py-1.5 rounded-lg border border-red-200"><i class="fas fa-trash-alt mr-1"></i> Deleted</span>' : ''}
+                            ${isDeleted ? '<span class="text-red-500 font-black text-[10px] uppercase tracking-widest bg-red-50 px-3 py-1.5 rounded-lg border border-red-200 block text-center"><i class="fas fa-trash-alt mr-1"></i> Deleted</span>' : ''}
                         </td>
                         <td class="p-4 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 ${isDeleted ? `
-                                    <button onclick="restoreProduct('${p.ID}')" class="bg-green-50 border border-green-200 text-green-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-green-100 transition shadow-sm flex items-center"><i class="fas fa-undo-alt mr-2"></i> वापस लाएं</button>
+                                    <button onclick="restoreProduct('${p.ID}')" class="bg-green-50 border border-green-200 text-green-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-green-100 transition shadow-sm flex items-center active:scale-90"><i class="fas fa-undo-alt mr-2"></i> Restore</button>
                                 ` : `
-                                    <button onclick="saveStock('${p.ID}')" class="bg-blue-50 border border-blue-200 text-[#0071e3] w-10 h-10 rounded-xl text-sm font-bold hover:bg-blue-100 transition shadow-sm flex items-center justify-center" title="Save Changes"><i class="fas fa-save"></i></button>
-                                    <button onclick="deleteProduct('${p.ID}')" class="bg-red-50 border border-red-200 text-red-600 w-10 h-10 rounded-xl text-sm font-bold hover:bg-red-100 transition shadow-sm flex items-center justify-center" title="Delete Product"><i class="fas fa-trash"></i></button>
+                                    <button onclick="saveStock('${p.ID}')" class="bg-blue-50 border border-blue-200 text-[#0071e3] w-10 h-10 rounded-xl text-sm font-bold hover:bg-blue-100 transition shadow-sm flex items-center justify-center active:scale-90" title="Save Changes"><i class="fas fa-save"></i></button>
+                                    <button onclick="deleteProduct('${p.ID}')" class="bg-red-50 border border-red-200 text-red-600 w-10 h-10 rounded-xl text-sm font-bold hover:bg-red-100 transition shadow-sm flex items-center justify-center active:scale-90" title="Delete Product"><i class="fas fa-trash"></i></button>
                                 `}
                             </div>
                         </td>
@@ -753,21 +753,21 @@
                 if(pIndex > -1) { allData.products[pIndex].Stock = newStock; allData.products[pIndex].Status = newStatus; }
                 
                 renderStock(); renderInventory(); renderDashboard();
-                showToast("स्टॉक और स्टेटस अपडेट हो गया!");
-            } catch(e) { showToast("अपडेट फेल हो गया।", "error"); }
+                showToast("Stock and status updated successfully!");
+            } catch(e) { showToast("Update failed.", "error"); }
             document.getElementById('loading').style.display = 'none';
         }
 
         async function deleteProduct(id) {
-            if(!confirm("इस प्रोडक्ट को हटाना चाहते हैं?")) return;
+            if(!confirm("Are you sure you want to delete this product?")) return;
             document.getElementById('loading').style.display = 'flex';
             try {
                 await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ token: TOKEN, action: "universalUpdate", sheetName: "Products", searchCol: 0, searchValue: id, updateCol: 8, updateValue: "Deleted" }) });
                 let pIndex = allData.products.findIndex(p => p.ID === id);
                 if(pIndex > -1) allData.products[pIndex].Status = "Deleted";
                 renderStock(); renderInventory(); renderDashboard();
-                showToast("प्रोडक्ट हटा दिया गया है।", "error"); 
-            } catch(e) { showToast("हटाने में समस्या आई।", "error"); }
+                showToast("Product deleted successfully.", "error"); 
+            } catch(e) { showToast("Error deleting product.", "error"); }
             document.getElementById('loading').style.display = 'none';
         }
 
@@ -778,8 +778,8 @@
                 let pIndex = allData.products.findIndex(p => p.ID === id);
                 if(pIndex > -1) allData.products[pIndex].Status = "Visible";
                 renderStock(); renderInventory(); renderDashboard();
-                showToast("प्रोडक्ट वापस लाइव हो गया है!");
-            } catch(e) { showToast("रिस्टोर करने में समस्या आई।", "error"); }
+                showToast("Product restored successfully!");
+            } catch(e) { showToast("Error restoring product.", "error"); }
             document.getElementById('loading').style.display = 'none';
         }
 
@@ -791,31 +791,31 @@
             }
             table.innerHTML = allData.orders.reverse().map(o => {
                 let u = allData.users.find(x => x.Email === o.Email);
-                let address = o.Delivery_Address || formatAddress(u); // Prioritize order's specific address
+                let address = o.Delivery_Address || formatAddress(u);
                 let phone = u && u.Phone ? u.Phone : 'No Phone';
                 let name = u && u.Name ? u.Name : 'Guest';
 
                 return `
                 <tr class="border-b border-gray-50 hover:bg-gray-50/80 transition-colors">
-                    <td class="p-5 font-mono text-[11px] font-black text-gray-900 bg-gray-50/30">
+                    <td class="p-5 font-mono text-[11px] font-black text-gray-900 bg-gray-50/30 whitespace-nowrap">
                         ${o.Order_ID}<br><span class="text-gray-400 text-[9px] mt-1 block">${new Date(o.Date).toLocaleDateString()}</span>
                     </td>
-                    <td class="p-5">
+                    <td class="p-5 min-w-[200px]">
                         <p class="text-xs font-bold text-gray-900 mb-1">${name} <span class="text-[10px] text-gray-400 font-normal">(${o.Email})</span></p>
                         <p class="text-[10px] font-bold text-gray-600 mt-1"><i class="fas fa-phone text-[#0071e3] mr-1"></i> ${phone}</p>
-                        <p class="text-[10px] font-bold text-gray-600 mt-1 max-w-[250px] leading-tight whitespace-normal"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${address}</p>
+                        <p class="text-[10px] font-bold text-gray-600 mt-1 leading-tight"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${address}</p>
                     </td>
-                    <td class="p-5 text-[12px] font-medium text-gray-800 max-w-[200px] truncate" title="${o.Items}">${o.Items}</td>
-                    <td class="p-5 font-black text-[#0071e3] text-sm">₹${o.Amount}</td>
-                    <td class="p-5 text-center">
+                    <td class="p-5 text-[11px] font-medium text-gray-800 min-w-[150px]" title="${o.Items}">${o.Items}</td>
+                    <td class="p-5 font-black text-[#0071e3] text-sm whitespace-nowrap">₹${o.Amount}</td>
+                    <td class="p-5 text-center min-w-[120px]">
                         <div class="flex flex-col gap-2 w-full max-w-[120px] mx-auto">
-                            <select onchange="updateOrderStatus('${o.Order_ID}', this.value)" class="admin-input py-2 px-2 text-xs cursor-pointer font-bold border-none shadow-sm w-full ${getStatusClass(o.Status)}">
+                            <select onchange="updateOrderStatus('${o.Order_ID}', this.value)" class="admin-input py-2 px-2 text-[11px] cursor-pointer font-bold border-none shadow-sm w-full ${getStatusClass(o.Status)}">
                                 <option value="Pending" ${o.Status==='Pending'?'selected':''}>Pending</option>
                                 <option value="Processing" ${o.Status==='Processing'?'selected':''}>Processing</option>
                                 <option value="Delivered" ${o.Status==='Delivered'?'selected':''}>Delivered</option>
                                 <option value="Cancelled" ${o.Status==='Cancelled'?'selected':''}>Cancelled</option>
                             </select>
-                            <button onclick="printOrderSlip('${o.Order_ID}')" class="bg-[#1d1d1f] text-white py-1.5 px-3 rounded-lg text-[10px] font-bold hover:bg-black transition shadow-sm w-full flex items-center justify-center gap-1">
+                            <button onclick="printOrderSlip('${o.Order_ID}')" class="bg-[#1d1d1f] text-white py-1.5 px-3 rounded-lg text-[10px] font-bold hover:bg-black transition active:scale-95 shadow-sm w-full flex items-center justify-center gap-1">
                                 <i class="fas fa-print"></i> Print Slip
                             </button>
                         </div>
@@ -824,16 +824,19 @@
             }).join('');
         }
 
-        // 🔥 ULTIMATE CRASH-PROOF PRINTING
+        // 🔥 ULTIMATE CRASH-PROOF PRINTING BUG FIXED
         function printOrderSlip(orderId) {
             let o = allData.orders.find(x => x.Order_ID === orderId); if(!o) return;
             let u = allData.users.find(x => x.Email === o.Email);
-            let address = o.Delivery_Address || formatAddress(u); // Ensures specific address is printed
+            let address = o.Delivery_Address || formatAddress(u); 
             let phone = u && u.Phone ? u.Phone : 'N/A'; 
             let name = u && u.Name ? u.Name : 'N/A';
             
             const printArea = document.getElementById('printSection');
             
+            // Format Items correctly instead of using missing frontend variables
+            let itemsHtml = o.Items ? o.Items.split('|').map(item => `<tr><td style="padding: 12px 10px; border-bottom: 1px solid #eee;">${item.trim()}</td></tr>`).join('') : '<tr><td>No items data found</td></tr>';
+
             printArea.innerHTML = `
                 <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; color: #111;">
                     <div style="border: 2px solid #111; padding: 30px; border-radius: 16px; max-width: 600px; margin: auto;">
@@ -850,7 +853,9 @@
                         <p style="margin: 5px 0; line-height: 1.5;"><strong>Delivery Address:</strong> ${address}</p>
                         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                         <h3 style="text-transform: uppercase; font-size: 14px; color: #666;">Order Items</h3>
-                        <p style="font-size: 16px; line-height: 1.6;">${o.Items}</p>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                            ${itemsHtml}
+                        </table>
                         <div style="font-size: 24px; font-weight: 900; margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 15px;">Total Amount: ₹${o.Amount}</div>
                         <p style="text-align: center; margin-top: 40px; font-size: 12px; color: #888;">Thank you for shopping with Patel Traders.</p>
                     </div>
@@ -871,15 +876,15 @@
                 let pic = u.ProfilePic || `https://ui-avatars.com/api/?name=${u.Name || 'User'}&background=f4f4f7&color=0071e3`;
                 return `
                 <tr class="border-b border-gray-50 hover:bg-gray-50/80 transition-colors fade-in-up" style="animation-delay: ${i*30}ms">
-                    <td class="p-5 font-mono text-[10px] font-bold text-gray-400 bg-gray-50/30">${u.UserID || 'N/A'}</td>
-                    <td class="p-5">
-                        <div class="flex items-center gap-4">
-                            <img src="${pic}" class="w-12 h-12 rounded-full border border-gray-200 shadow-sm object-cover">
-                            <div><p class="font-bold text-gray-900 text-sm leading-tight">${u.Name || 'Guest User'}</p><p class="text-xs text-gray-500 mt-0.5">${u.Email}</p></div>
+                    <td class="p-4 font-mono text-[10px] font-bold text-gray-400 bg-gray-50/30 whitespace-nowrap">${u.UserID || 'N/A'}</td>
+                    <td class="p-4 min-w-[200px]">
+                        <div class="flex items-center gap-3">
+                            <img src="${pic}" class="w-10 h-10 rounded-full border border-gray-200 shadow-sm object-cover">
+                            <div><p class="font-bold text-gray-900 text-[13px] leading-tight">${u.Name || 'Guest User'}</p><p class="text-[10px] text-gray-500 mt-0.5">${u.Email}</p></div>
                         </div>
                     </td>
-                    <td class="p-5 text-center text-xs font-bold text-gray-700"><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md border border-blue-100">${u.Visits || 0}</span></td>
-                    <td class="p-5 text-center"><button onclick="openUserModal('${u.Email}')" class="bg-white border border-gray-200 hover:border-[#0071e3] hover:bg-blue-50 text-[#0071e3] px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center mx-auto gap-2"><i class="fas fa-eye"></i> View Vault</button></td>
+                    <td class="p-4 text-center text-xs font-bold text-gray-700 whitespace-nowrap"><span class="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-md border border-blue-100">${u.Visits || 0}</span></td>
+                    <td class="p-4 text-center whitespace-nowrap"><button onclick="openUserModal('${u.Email}')" class="bg-white border border-gray-200 hover:border-[#0071e3] hover:bg-blue-50 text-[#0071e3] px-4 py-2 rounded-xl text-[11px] font-bold transition shadow-sm active:scale-95 flex items-center justify-center mx-auto gap-2"><i class="fas fa-eye"></i> View Vault</button></td>
                 </tr>
             `}).join('');
         }
@@ -888,13 +893,12 @@
         function openUserModal(email) {
             const u = allData.users.find(x => x.Email === email); if(!u) return;
             
-            // Photo rendering with fallback
             document.getElementById('um-avatar').src = u.ProfilePic || `https://ui-avatars.com/api/?name=${u.Name || 'User'}&background=f4f4f7&color=0071e3&size=128`;
             
             document.getElementById('um-name').innerText = u.Name || 'Guest User';
             document.getElementById('um-email').innerText = u.Email;
             document.getElementById('um-phone').innerText = u.Phone || 'No Phone Number';
-            document.getElementById('um-address').innerText = formatAddress(u); // Uses the new parsing logic
+            document.getElementById('um-address').innerText = formatAddress(u);
             document.getElementById('um-visits').innerText = u.Visits || 0;
             document.getElementById('um-device').innerText = u.Device ? u.Device.substring(0, 25) + "..." : 'Unknown';
             document.getElementById('um-updates').innerText = `${u.UpdateCount || 0}/5`;
@@ -906,15 +910,15 @@
             if(cObj && cObj.CartJSON && cObj.CartJSON !== "[]") {
                 try {
                     let cartItems = JSON.parse(cObj.CartJSON);
-                    cartDiv.innerHTML = cartItems.map(item => `<div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm"><div class="flex items-center gap-4"><img src="${extractDirectImageUrl(item.Image_URL)}" class="w-12 h-12 rounded-lg object-cover border border-gray-200" onerror="this.src='https://via.placeholder.com/100'"><div><p class="text-sm font-bold text-gray-900">${item.Name} <span class="text-[10px] bg-white px-1.5 py-0.5 border rounded text-gray-500 uppercase">${item.size||'STD'}</span></p><p class="text-xs text-gray-500 font-medium mt-1">₹${item.Price} <span class="text-black font-bold">x ${item.qty}</span></p></div></div><span class="font-black text-[#0071e3] text-lg">₹${item.Price * item.qty}</span></div>`).join('');
-                } catch(e) { cartDiv.innerHTML = '<p class="text-sm text-red-500 font-bold bg-red-50 p-3 rounded-lg">Error parsing cart data.</p>'; }
-            } else { cartDiv.innerHTML = '<p class="text-sm text-gray-500 font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 text-center">Customer cart is currently empty.</p>'; }
+                    cartDiv.innerHTML = cartItems.map(item => `<div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100 shadow-sm"><div class="flex items-center gap-3"><img src="${extractDirectImageUrl(item.Image_URL)}" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.src='https://via.placeholder.com/100'"><div><p class="text-xs font-bold text-gray-900">${item.Name} <span class="text-[9px] bg-white px-1.5 py-0.5 border rounded text-gray-500 uppercase">${item.size||'STD'}</span></p><p class="text-[10px] text-gray-500 font-medium mt-1">₹${item.Price} <span class="text-black font-bold">x ${item.qty}</span></p></div></div><span class="font-black text-[#0071e3] text-sm">₹${item.Price * item.qty}</span></div>`).join('');
+                } catch(e) { cartDiv.innerHTML = '<p class="text-xs text-red-500 font-bold bg-red-50 p-3 rounded-lg">Error parsing cart data.</p>'; }
+            } else { cartDiv.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">Customer cart is currently empty.</p>'; }
 
             const userOrders = allData.orders.filter(o => o.Email === email);
             const orderDiv = document.getElementById('um-orders');
             if(userOrders.length > 0) {
-                orderDiv.innerHTML = userOrders.reverse().map(o => `<div class="bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center"><div class="flex-1 pr-4"><p class="text-[10px] font-mono text-gray-400 font-bold mb-1">${o.Order_ID}</p><p class="text-xs font-bold text-gray-900 line-clamp-1" title="${o.Items}">${o.Items}</p></div><span class="status-badge ${getStatusClass(o.Status)}">${o.Status}</span></div>`).join('');
-            } else { orderDiv.innerHTML = '<p class="text-sm text-gray-500 font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 text-center">No orders placed yet.</p>'; }
+                orderDiv.innerHTML = userOrders.reverse().map(o => `<div class="bg-gray-50 p-3 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center"><div class="flex-1 pr-3"><p class="text-[9px] font-mono text-gray-400 font-bold mb-1">${o.Order_ID}</p><p class="text-[11px] font-bold text-gray-900 line-clamp-2" title="${o.Items}">${o.Items}</p></div><span class="status-badge ${getStatusClass(o.Status)}">${o.Status}</span></div>`).join('');
+            } else { orderDiv.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-gray-50 p-4 rounded-xl border border-gray-100 text-center">No orders placed yet.</p>'; }
 
             document.getElementById('userModal').classList.add('active');
         }
@@ -938,7 +942,7 @@
             document.getElementById('loading').style.display = 'none';
         }
 
-        // --- 📸 DIRECT UPLOAD & ADD PRODUCT ---
+        // --- 📸 DIRECT UPLOAD & ADD PRODUCT (BUG FIXED: SMART DYNAMIC COLUMNS) ---
         function handleImagePreview() {
             const grid = document.getElementById('previewGrid');
             const files = document.getElementById('fileInput').files;
@@ -968,7 +972,7 @@
             let finalCategory = document.getElementById('catSelect').value;
             if (finalCategory === 'NEW') {
                 finalCategory = document.getElementById('newCatInput').value.trim();
-                if(!finalCategory) return showToast("कृपया नई कैटेगरी का नाम लिखें!", "error");
+                if(!finalCategory) return showToast("Please enter a category name!", "error");
             }
 
             document.getElementById('loading').style.display = 'flex';
@@ -989,13 +993,34 @@
                 const p = Object.fromEntries(formData.entries());
                 const shortDesc = p.Long_Description ? p.Long_Description.substring(0, 50) + "..." : "Premium Quality Furniture";
                 
-                const rowData = [ 
-                    "PT-" + Date.now(), p.Name, finalCategory, p.Price, p.MRP, 
-                    p.Stock, uploadedUrls.join(','), shortDesc, "Visible", 
-                    p.Wood_Type, p.Dimensions, p.Weight, p.Size_Options, p.Long_Description 
-                ];
+                // 🔥 BUG FIX: Using universalWriteDynamic to prevent missing columns
+                let payloadObj = {
+                    ID: "PT-" + Date.now(),
+                    Name: p.Name,
+                    Category: finalCategory,
+                    Price: p.Price,
+                    MRP: p.MRP,
+                    Stock: p.Stock,
+                    Image_URL: uploadedUrls.join(','),
+                    Description: shortDesc,
+                    Status: "Visible",
+                    Wood_Type: p.Wood_Type || "",
+                    Dimensions: p.Dimensions || "",
+                    Weight: p.Weight || "",
+                    Size_Options: p.Size_Options || "",
+                    Long_Description: p.Long_Description || ""
+                };
 
-                const finalRes = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ token: TOKEN, action: "universalWrite", sheetName: "Products", rowData: rowData }) });
+                const finalRes = await fetch(SCRIPT_URL, { 
+                    method: "POST", 
+                    body: JSON.stringify({ 
+                        token: TOKEN, 
+                        action: "universalWriteDynamic", 
+                        sheetName: "Products", 
+                        payload: payloadObj 
+                    }) 
+                });
+                
                 const result = await finalRes.json();
                 
                 if(result.status === "success") { 
@@ -1035,5 +1060,3 @@
     </script>
 </body>
 </html>
-
-
